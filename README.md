@@ -1,1 +1,1 @@
-# COMP90024
+# COMP90024 Assignment 2
