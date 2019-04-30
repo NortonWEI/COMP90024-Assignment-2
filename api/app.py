@@ -12,8 +12,8 @@ def get_couch_db():
 
 @app.route('/')
 def index():
-    #return get_couch_db().version()
-    return render_template('index.html')
+    return get_couch_db().version()
+    #return render_template('index.html')
 
 
 @app.route('/', methods=['POST'])

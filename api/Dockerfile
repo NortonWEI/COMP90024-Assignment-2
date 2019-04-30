@@ -1,7 +1,7 @@
 FROM python:3.7.3
 
-ADD . /project
-WORKDIR /project
+ADD . /api
+WORKDIR /api
 RUN pip install -r requirements.txt
 
 ENTRYPOINT ["python"]

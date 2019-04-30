@@ -9,15 +9,23 @@ services:
       - ./db/couchdb/etc:/opt/couchdb/etc/local.d
     networks:
       web-net:
-
-  web:
-    build: ./project
+  api:
+    build: api
     volumes:
-      - ./project:/project
+      - ./api:/api
     ports:
       - 5000:5000
     depends_on:
       - couchdb
+    networks:
+      - web-net
+  client:
+    build: client
+    volumes:
+      - ./client:/usr/src/app
+      - ./client/node_modules:/usr/src/app/node_modules
+    ports:
+      - 80:3000
     networks:
       - web-net
 
