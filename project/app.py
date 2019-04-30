@@ -6,12 +6,13 @@ app = Flask(__name__)
 
 def get_couch_db():
     if not hasattr(g, 'couch_db'):
-        g.couch_db = couchdb.Server("http://localhost:5984/")
+        g.couch_db = couchdb.Server("http://couchdb:5984")
     return g.couch_db
 
 
 @app.route('/')
 def index():
+    #return get_couch_db().version()
     return render_template('index.html')
 
 
@@ -39,4 +40,4 @@ def query(uuid):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,host='0.0.0.0')
