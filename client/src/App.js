@@ -1,32 +1,32 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import Axios from './axios';
+import Typography from "@material-ui/core/Typography";
+import Toolbar from "@material-ui/core/Toolbar";
+import AppBar from "@material-ui/core/AppBar";
+import {MuiThemeProvider, createMuiTheme}from "@material-ui/core/styles";
+import Home from "./components/Home";
+import {withStyles} from "@material-ui/core/styles";
+import CssBaseline from "@material-ui/core/CssBaseline";
+
+const theme = createMuiTheme({
+});
 
 class App extends React.Component {
-  state = {
-      page: "",
-      e: ""
-  };
-
-  async componentDidMount() {
-      try{
-          const page = await Axios.get('http://localhost:5000');
-          console.log(page.data);
-          this.setState({
-              page: page.data.toString()
-          })
-      } catch (e) {
-
-      }
-  }
-
   render() {
     return (
-      <div className="App">
-          {this.state.page}
-          {this.state.e}
-      </div>
+      <MuiThemeProvider theme={theme}>
+        <CssBaseline />
+        <div className="App">
+          <AppBar position="sticky">
+            <Toolbar>
+              <Typography variant="h6" color="inherit" noWrap>
+                Visualisation Demo
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          <Home/>
+        </div>
+      </MuiThemeProvider>
     );
   }
 }
