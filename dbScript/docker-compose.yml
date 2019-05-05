@@ -11,6 +11,7 @@ services:
     links:
       - couch_slave1
       - couch_slave2
+      - couch_slave3
     volumes:
       - /Users/zoe/workspace/COMP90024/datafile/data:/opt/couchdb/data
     environment:
@@ -61,12 +62,11 @@ services:
     environment:
       - COUCHDB_USER=user
       - COUCHDB_PASSWORD=pass
-      - NODENAME=172.20.0.4
+      - NODENAME=172.20.0.5
     container_name: couch_slave3
     networks:
       couchdb_nw:
         ipv4_address: 172.20.0.5
-
 networks:
   couchdb_nw:
     driver: bridge
