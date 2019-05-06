@@ -2,12 +2,14 @@ import couchdb
 import json
 from flask import Flask, g, jsonify, url_for
 import random
+from flask_cors import CORS
 
 GEO_INFO_FILE = "config/suburbs.json"
 JSON_MIME_TYPE = 'application/json'
 TEST_QUOTA = 30
 
 app = Flask(__name__)
+CORS(app)
 
 
 class Suburb:
@@ -102,5 +104,5 @@ def query(uuid):
 
 
 if __name__ == '__main__':
-    app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon.ico'))
+    #app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon.ico'))
     app.run(debug=True, host='0.0.0.0')
