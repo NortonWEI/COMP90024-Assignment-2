@@ -6,7 +6,7 @@ from flask_cors import CORS
 
 GEO_INFO_FILE = "config/suburbs.json"
 JSON_MIME_TYPE = 'application/json'
-TEST_QUOTA = 30
+TEST_QUOTA = 50
 
 app = Flask(__name__)
 CORS(app)
@@ -54,8 +54,10 @@ def index():
 def tweets_sentiment(state):
     suburbs = [sub for sub in get_geo_info() if sub.state_code == state]
     view = dict()
+    access_index = 0
     while len(view) < TEST_QUOTA:
-        access_index = random.randint(0, len(suburbs) - 1)
+        #access_index = random.randint(0, len(suburbs) - 1)
+        access_index += 1
         view[suburbs[access_index].suburb] = round(random.uniform(-1, 1), 3)
     return jsonify(view)
 
@@ -64,8 +66,10 @@ def tweets_sentiment(state):
 def sickness_allowance(state):
     suburbs = [sub for sub in get_geo_info() if sub.state_code == state]
     view = dict()
+    access_index = 0
     while len(view) < TEST_QUOTA:
-        access_index = random.randint(0, len(suburbs) - 1)
+        #access_index = random.randint(0, len(suburbs) - 1)
+        access_index += 1
         view[suburbs[access_index].suburb] = round(random.uniform(0, 200), 3)
     return jsonify(view)
 
@@ -74,8 +78,10 @@ def sickness_allowance(state):
 def mental_health(state):
     suburbs = [sub for sub in get_geo_info() if sub.state_code == state]
     view = dict()
+    access_index = 0
     while len(view) < TEST_QUOTA:
-        access_index = random.randint(0, len(suburbs) - 1)
+        #access_index = random.randint(0, len(suburbs) - 1)
+        access_index += 1
         view[suburbs[access_index].suburb] = random.randint(1, 200)
     return jsonify(view)
 
