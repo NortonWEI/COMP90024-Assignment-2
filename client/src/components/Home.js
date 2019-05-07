@@ -27,13 +27,9 @@ import {
   YAxis,
   ZAxis
 } from "recharts";
-import Button from "@material-ui/core/Button";
 import {Typography} from "@material-ui/core";
 import {SizeMe} from "react-sizeme";
-
-const lowerCaseKeysObject = obj => Object.fromEntries(
-  Object.entries(obj).map(([k, v]) => [k.toLowerCase(), v])
-);
+import Divider from "@material-ui/core/Divider";
 
 class Home extends React.Component {
   state = {
@@ -42,11 +38,12 @@ class Home extends React.Component {
       geoJSONData: null,
       loading: true,
       loadingContent: '',
-      geoJSONUrl: 'http://localhost/geoserver.geojson',
+      geoJSONUrl: 'http://localhost/greater-melbourne.geojson',
       bounds: null,
       sentimentData: {},
       currentFeature: null,
-      allDataBySuburb: {}
+      allDataBySuburb: {},
+      currentSuburbs: [],
   };
 
   async componentDidMount() {
@@ -72,6 +69,7 @@ class Home extends React.Component {
 
       Object.keys(sentimentData.data).forEach(s => {
         const lc = s.toLowerCase();
+
         if (!(lc in allData)) {
           allData[lc] = {};
         }
@@ -119,6 +117,7 @@ class Home extends React.Component {
         loading: false,
       });
 
+      this.onMapBoundsChanged.bind(null, this)();
       console.log(allData);
     } catch (e) {
 
@@ -161,8 +160,13 @@ class Home extends React.Component {
     return Math.max(Math.abs(val) * 0.9, 0.3);
   };
 
+  getSuburbFromFeature = (feature) => {
+    // this.state.currentFeature.properties.vic_loca_2
+    return feature.id.split('~')[0].toLowerCase();
+  };
+
   getFeatureStyle = (feature) => {
-    const suburb = feature.properties.vic_loca_2.toLowerCase();
+    const suburb = this.getSuburbFromFeature(feature);
 
     return {
         fillColor: this.getSentimentColorBySuburb(suburb),
@@ -177,16 +181,16 @@ class Home extends React.Component {
   highlightFeature = (e, feature) => {
     const layer = e.target;
 
+    this.setState({currentFeature: feature});
+
     layer.setStyle({
-        weight: 5,
-        color: '#FFA500',
+        weight: 3,
+        color: '#cc99ff',
         dashArray: '',
         fillOpacity: 0.7
     });
 
     layer.bringToFront();
-
-    this.setState({currentFeature: feature});
   };
 
   resetHighlight = (component, e) => {
@@ -245,12 +249,33 @@ class Home extends React.Component {
     );
   };
 
+  onMapBoundsChanged = component => {
+    const mapElement = component.refs.map.leafletElement;
+    const geojsonElement = component.refs.geojson.leafletElement;
+    const suburbs = [];
+
+    geojsonElement.eachLayer(layer => {
+      if (mapElement.getBounds().contains(layer.getBounds().getCenter())) {
+        suburbs.push(this.getSuburbFromFeature(layer.feature));
+      }
+    });
+
+    this.setState({currentSuburbs: suburbs});
+  };
+
   renderMap = () => {
     const position = [-37.8136, 144.9631];
-    const currSuburb = this.state.currentFeature ? this.state.currentFeature.properties.vic_loca_2 : null;
+    const { currentFeature } = this.state;
+    const currSuburb = currentFeature ? this.getSuburbFromFeature(currentFeature) : null;
 
     return (
-      <Map center={position} zoom={12} boundOptions={this.state.bounds} ref="map">
+      <Map
+        center={position}
+        zoom={12}
+        boundOptions={this.state.bounds}
+        ref="map"
+        onViewportChanged={this.onMapBoundsChanged.bind(null, this)}
+      >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
@@ -306,13 +331,18 @@ class Home extends React.Component {
     )
   };
 
+  filterSuburbsByMapBounds = d => {
+    return this.state.currentSuburbs.includes(d.suburb);
+  };
+
   renderTopStats = () => {
     let sortedSuburbData = Object.keys(this.state.allDataBySuburb).map(s => {
       return {
         ...this.state.allDataBySuburb[s],
         suburb: s,
       }
-    });
+    }).filter(this.filterSuburbsByMapBounds);
+
 
     sortedSuburbData.sort((d1, d2) => d2.sent - d1.sent);
 
@@ -353,20 +383,12 @@ class Home extends React.Component {
   };
 
   renderCharts = () => {
-    // let data = [
-    //   { suburb: 'MELBOURNE', x: -0.8, y: 800, z: 200 }, { suburb: 'SOUTH MELBOURNE', x: 0.5, y: 50, z: 555 },
-    //   { suburb: 'SOUTHBANK', x: -0.5, y: 500, z: 170 }, { suburb: 'EAST MELBOURNE', x: 0, y: 100, z: 300 },
-    //   { suburb: 'CARLTON', x: 1, y: 10, z: 1000 }, { suburb: 'DOCKLANDS', x: 0.3, y: 30, z: 333 },
-    // ];
-    //
-    // data.sort((d1, d2) => d2.x - d1.x);
-
     let sortedSuburbData = Object.keys(this.state.allDataBySuburb).map(s => {
       return {
         ...this.state.allDataBySuburb[s],
         suburb: s,
       }
-    });
+    }).filter(this.filterSuburbsByMapBounds);
 
     sortedSuburbData.sort((d1, d2) => d2.sent - d1.sent);
 
@@ -390,14 +412,14 @@ class Home extends React.Component {
               </XAxis>
               <YAxis type="number" label={{ value: 'Avg. Twitter Sentiment', angle: -90, position: 'insideLeft' }} dataKey="sent" name="sentiment" unit="" />
               <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-              <Legend verticalAlign="bottom" height={200}/>
+              <Legend verticalAlign="bottom"/>
               {sortedSuburbData.map((d, index) => (
                   <Scatter key={index} name={`${d.suburb}`} data={[d]} fill={this.getSentimentColor(d.sent)} shape="circle" />
               ))}
             </ScatterChart>
           </Grid>
         </Grid>}</SizeMe>
-        <Grid item xs={12}>
+        <Grid item xs={12} style={{marginTop: '30px'}}>
           <Typography variant="h6">Sentiment Score vs. Sickness Allowance</Typography>
         </Grid>
         <SizeMe>{({ size }) => <Grid item xs={12} container justify="center">
@@ -430,8 +452,16 @@ class Home extends React.Component {
     return (
         <Grid container spacing={24}>
           {this.renderMapSection()}
+          <Grid item xs={12}>
+            <Typography variant="overline">Suburbs (in below charts) are matched with map view</Typography>
+          </Grid>
           {this.renderTopStats()}
           {this.renderCharts()}
+          <Grid item xs={12}>
+            <Divider style={{marginBottom: '15px'}} />
+            <Typography variant="subtitle2">COMP90024 Project 2</Typography>
+            <Typography variant="subtitle2">Dafu Ai, Wenzhou Wei, Jianshan Yao, Tsung Hsiu Hsieh, Zhuo Liu</Typography>
+          </Grid>
         </Grid>
     );
   }
