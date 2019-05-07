@@ -82,7 +82,7 @@ def sickness_allowance(state):
     state = state.upper()
     view = dict()
     start_index = "{}0000".format(get_lga_prefix()[state])
-    end_index = "{}0000".format(int(get_lga_prefix()[state]) + 1)
+    end_index = "{}9999".format(get_lga_prefix()[state])
     for item in get_statistic_view("medipayment", "sickness_allowance", "sickness_allowance", start_index, end_index):
         view[re.sub(r'\(\S+\)', '', item.key[1]).strip()] = item.value
     return jsonify(view)
@@ -93,7 +93,7 @@ def mental_health(state):
     state = state.upper()
     view = dict()
     start_index = "{}0000".format(get_lga_prefix()[state])
-    end_index = "{}0000".format(int(get_lga_prefix()[state]) + 1)
+    end_index = "{}9999".format(get_lga_prefix()[state])
     for item in get_statistic_view("mentalhealthadmission", "distribution", "mental_health_view", start_index, end_index):
         view[re.sub(r'\(\S+\)', '', item.key[1]).strip()] = item.value
     return jsonify(view)
