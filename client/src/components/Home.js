@@ -453,7 +453,9 @@ class Home extends React.Component {
         <Grid container spacing={24}>
           {this.renderMapSection()}
           <Grid item xs={12}>
-            <Typography variant="overline">Suburbs (in below charts) are matched with map view</Typography>
+            <Typography variant="overline">
+              <b>{this.state.currentSuburbs.length}</b> Suburbs (in below charts) are matched with current map view
+            </Typography>
           </Grid>
           {this.renderTopStats()}
           {this.renderCharts()}
