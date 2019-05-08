@@ -8,6 +8,8 @@ import re
 GEO_INFO_FILE = "config/suburbs.json"
 JSON_MIME_TYPE = 'application/json'
 LGA_PREFIX_FILE = "config/lga_prefix.json"
+MELBOURNE_AREA_SUBURBS = "config/melbourne-suburbs.json"
+LGA_COMPOSITION_FILE = "config/lga_composition.json"
 TEST_QUOTA = 50
 
 app = Flask(__name__)
@@ -49,6 +51,23 @@ def get_lga_prefix():
     return g.lga_prefix
 
 
+def get_melbourne_suburbs():
+    if not hasattr(g, 'melbourne_suburbs'):
+        with open(MELBOURNE_AREA_SUBURBS, 'r') as f:
+            suburbs = list()
+            for suburb in json.load(f):
+                suburbs.append(suburb["suburb"].lower())
+            g.melbourne_suburbs = suburbs
+    return g.melbourne_suburbs
+
+
+def get_lga_composition():
+    if not hasattr(g, 'lga_composition'):
+        with open(LGA_COMPOSITION_FILE, 'r') as f:
+            g.lga_composition = json.load(f)
+    return g.lga_composition
+
+
 def get_statistic_view(collection_name, design_doc_name, view_name, start_key, end_key):
     return get_couch_db()[collection_name].view('{}/{}'.format(design_doc_name, view_name),
                                                 startkey=[start_key],
@@ -83,8 +102,15 @@ def sickness_allowance(state):
     view = dict()
     start_index = "{}0000".format(get_lga_prefix()[state])
     end_index = "{}9999".format(get_lga_prefix()[state])
+    lga_composition = get_lga_composition()
+    melbourne_suburbs = get_melbourne_suburbs()
     for item in get_statistic_view("medipayment", "sickness_allowance", "sickness_allowance", start_index, end_index):
-        view[re.sub(r'\(\S+\)', '', item.key[1]).strip()] = item.value
+        lga_name = re.sub(r'\(\S+\)', '', item.key[1]).strip()
+        suburbs = lga_composition[lga_name]
+        for suburb in suburbs:
+            # limiting of showing suburbs in Melbourne area
+            if suburb["suburb"].lower() in melbourne_suburbs:
+                view[suburb["suburb"]] = item.value
     return jsonify(view)
 
 
@@ -94,8 +120,15 @@ def mental_health(state):
     view = dict()
     start_index = "{}0000".format(get_lga_prefix()[state])
     end_index = "{}9999".format(get_lga_prefix()[state])
+    lga_composition = get_lga_composition()
+    melbourne_suburbs = get_melbourne_suburbs()
     for item in get_statistic_view("mentalhealthadmission", "distribution", "mental_health_view", start_index, end_index):
-        view[re.sub(r'\(\S+\)', '', item.key[1]).strip()] = item.value
+        lga_name = re.sub(r'\(\S+\)', '', item.key[1]).strip()
+        suburbs = lga_composition[lga_name]
+        for suburb in suburbs:
+            # limiting of showing suburbs in Melbourne area
+            if suburb["suburb"].lower() in melbourne_suburbs:
+                view[suburb["suburb"]] = item.value
     return jsonify(view)
 
 # TODO only for generating data
