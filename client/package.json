@@ -7,10 +7,13 @@
     "@material-ui/icons": "^3.0.2",
     "axios": "^0.18.0",
     "leaflet": "^1.4.0",
+    "leaflet.markercluster": "^1.4.1",
+    "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-leaflet": "^2.2.1",
     "react-leaflet-control": "^2.1.1",
+    "react-leaflet-markercluster": "^2.0.0-rc3",
     "react-scripts": "3.0.0",
     "react-sizeme": "^2.6.7",
     "recharts": "^1.5.0"

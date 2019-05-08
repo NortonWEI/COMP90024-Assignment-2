@@ -1,6 +1,6 @@
 import React, {Fragment} from 'react';
 import Axios from '../axios';
-import {Map, TileLayer, GeoJSON} from 'react-leaflet';
+import {Map, TileLayer, GeoJSON, Marker, Popup} from 'react-leaflet';
 import {Grid} from "@material-ui/core";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Control from 'react-leaflet-control';
@@ -30,6 +30,9 @@ import {
 import {Typography} from "@material-ui/core";
 import {SizeMe} from "react-sizeme";
 import Divider from "@material-ui/core/Divider";
+import MarkerClusterGroup from 'react-leaflet-markercluster';
+import * as L from "leaflet";
+import "../leaflet.awesome-markers";
 
 class Home extends React.Component {
   state = {
@@ -44,6 +47,13 @@ class Home extends React.Component {
       currentFeature: null,
       allDataBySuburb: {},
       currentSuburbs: [],
+      sentimentMarkers: [
+        {'sentiment': 0.9, 'position': [-37.8136, 144.9661]},
+        {'sentiment': 0.2, 'position': [-37.7846, 144.9631]},
+        {'sentiment': 0, 'position': [-37.8156, 144.8941]},
+        {'sentiment': -0.3, 'position': [-37.8566, 144.9621]},
+        {'sentiment': -0.9, 'position': [-37.8176, 144.9671]}
+      ],
   };
 
   async componentDidMount() {
@@ -263,9 +273,40 @@ class Home extends React.Component {
     this.setState({currentSuburbs: suburbs});
   };
 
+  getSentimentIcon = sentimentPosition => {
+    const sentiment = sentimentPosition.sentiment;
+    let icon, color;
+
+    if (sentiment > 0.8) {
+      icon = 'grin-squint';
+      color = 'green';
+    } else if (sentiment >= 0.5) {
+      icon = 'smile-beam';
+      color = 'green';
+    } else if (sentiment >= 0) {
+      icon = 'smile';
+      color = 'darkgreen';
+    } else if (sentiment >= -0.5 && sentiment < 0) {
+      icon = 'frown';
+      color = 'darkred';
+    } else if (sentiment >= -0.8 && sentiment < 0.5) {
+      icon = 'sad-tear';
+      color = 'darkred';
+    } else {
+      icon = 'sad-cry';
+      color = 'red';
+    }
+
+    return L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: icon,
+      markerColor: color,
+    });
+  };
+
   renderMap = () => {
     const position = [-37.8136, 144.9631];
-    const { currentFeature } = this.state;
+    const { currentFeature, sentimentMarkers } = this.state;
     const currSuburb = currentFeature ? this.getSuburbFromFeature(currentFeature) : null;
 
     return (
@@ -275,10 +316,25 @@ class Home extends React.Component {
         boundOptions={this.state.bounds}
         ref="map"
         onViewportChanged={this.onMapBoundsChanged.bind(null, this)}
+        maxZoom={18}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png"
+          subdomains='abcd'
+          ext='png'
         />
+        <MarkerClusterGroup>
+          {sentimentMarkers.map(s => (
+            <Marker
+              position={s.position}
+              icon={this.getSentimentIcon(s)}
+            >
+              <Popup>
+                <span>My sentiment score is {s.sentiment}</span>
+              </Popup>
+            </Marker>
+          ))}
+        </MarkerClusterGroup>
         <GeoJSON
           data={this.state.geoJSONData}
           style={this.getFeatureStyle}
