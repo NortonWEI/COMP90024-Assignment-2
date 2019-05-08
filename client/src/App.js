@@ -1,3 +1,7 @@
+/**
+ * @author: Dafu Ai
+ */
+
 import React from 'react';
 import './App.css';
 import Typography from "@material-ui/core/Typography";
@@ -5,7 +9,6 @@ import Toolbar from "@material-ui/core/Toolbar";
 import AppBar from "@material-ui/core/AppBar";
 import {MuiThemeProvider, createMuiTheme}from "@material-ui/core/styles";
 import Home from "./components/Home";
-import {withStyles} from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 
 const theme = createMuiTheme({

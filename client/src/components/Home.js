@@ -1,3 +1,7 @@
+/**
+ * @author: Dafu Ai
+ */
+
 import React, {Fragment} from 'react';
 import Axios from '../axios';
 import {Map, TileLayer, GeoJSON, Marker, Popup} from 'react-leaflet';
@@ -121,16 +125,26 @@ class Home extends React.Component {
         allData[lc]['mental'] = mentalHealthData.data[s];
       });
 
+
+      this.setState({
+        loadingContent: '(5) Extreme Sentiment Cases'
+      });
+
+      const sentimentPositions = await Axios.get(
+        'http://localhost:5000/monitoring',
+      );
+
       this.setState({
         geoJSONData: suburbData.data,
         allDataBySuburb: allData,
         loading: false,
+        sentimentMarkers: sentimentPositions.data,
       });
 
       this.onMapBoundsChanged.bind(null, this)();
       console.log(allData);
     } catch (e) {
-
+      console.log(e);
     }
   }
 
@@ -326,11 +340,14 @@ class Home extends React.Component {
         <MarkerClusterGroup>
           {sentimentMarkers.map(s => (
             <Marker
-              position={s.position}
+              position={[s.latitude, s.longitude]}
               icon={this.getSentimentIcon(s)}
             >
               <Popup>
-                <span>My sentiment score is {s.sentiment}</span>
+                <span>
+                  My sentiment score is {s.sentiment} <br/>
+                  My sentiment fluctuation value is {s.fluctuation}
+                </span>
               </Popup>
             </Marker>
           ))}
