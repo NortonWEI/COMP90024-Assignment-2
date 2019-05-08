@@ -98,8 +98,8 @@ def monitoring():
         coordinate = coordinates[random.randint(0, len(coordinates) - 1)]
         case["latitude"] = coordinate[0]
         case["longitude"] = coordinate[1]
-        case["low_score"] = round(random.uniform(-1, 0), 3)
-        case["high_score"] = round(random.uniform(0, 1), 3)
+        case["sentiment"] = round(random.uniform(-1, 1), 3)
+        case["fluctuation"] = round(random.uniform(0, 2), 3)
         view.append(case)
     return jsonify(view)
 
