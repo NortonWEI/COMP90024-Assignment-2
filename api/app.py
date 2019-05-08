@@ -86,6 +86,23 @@ def mental_health(state):
     return jsonify(view)
 
 
+@app.route('/monitoring')
+def monitoring():
+    view = list()
+    coordinates = [(-37.7984, 144.9449), (-37.7833, 144.95), (-37.7603, 144.9502), (-37.8, 144.9667),
+                   (-37.8004, 144.9681), (-37.7818, 144.9666), (-37.7833, 144.9667), (-37.7603, 144.9502),
+                   (-37.7646, 144.9438), (-37.7603, 144.9502), (-37.7603, 144.9502), (-37.7667, 144.9667),
+                   (-37.7667, 144.9667), (-37.7667, 144.9667), (-37.7603, 144.9502), (-37.7725, 144.9724)]
+    while len(view) < TEST_QUOTA:
+        case = dict()
+        coordinate = coordinates[random.randint(0, len(coordinates) - 1)]
+        case["latitude"] = coordinate[0]
+        case["longitude"] = coordinate[1]
+        case["low_score"] = round(random.uniform(-1, 0), 3)
+        case["high_score"] = round(random.uniform(0, 1), 3)
+        view.append(case)
+    return jsonify(view)
+
 @app.route('/', methods=['POST'])
 def add():
     dbname = "wta2019"
