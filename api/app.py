@@ -28,7 +28,7 @@ class Suburb:
 
 def get_couch_db():
     if not hasattr(g, 'couch_db'):
-        g.couch_db = couchdb.Server("http://{}:{}@couchdb:5984".format("user", "pass"))
+        g.couch_db = couchdb.Server("http://{}:{}@172.26.37.208:5984".format("admin", "admin"))
     return g.couch_db
 
 
@@ -76,23 +76,23 @@ def get_statistic_view(collection_name, design_doc_name, view_name, start_key, e
 
 @app.route('/')
 def index():
-    suburbs = get_geo_info()
-    for s in suburbs:
-        print("{},{},{},{}".format(s.postcode, s.suburb, s.lga_name, s.state))
-    return "Total number of suburbs:{}".format(str(len(suburbs)))
-    # return get_couch_db().version()
-    #return render_template('index.html')
+    return get_couch_db().version()
 
 
 @app.route('/tweets_sentiment/<state>')
 def tweets_sentiment(state):
-    suburbs = [sub for sub in get_geo_info() if sub.state_code == state]
+    state = state.upper()
     view = dict()
-    access_index = 0
-    while len(view) < TEST_QUOTA:
-        #access_index = random.randint(0, len(suburbs) - 1)
-        access_index += 1
-        view[suburbs[access_index].suburb] = round(random.uniform(-1, 1), 3)
+    start_index = "{}0000".format(get_lga_prefix()[state])
+    end_index = "{}9999".format(get_lga_prefix()[state])
+    melbourne_suburbs = get_melbourne_suburbs()
+    for item in get_couch_db()['tweets_sample'].view('tweets/suburb',
+                                                     startkey=[start_index],
+                                                     endkey=[end_index, "{}"],
+                                                     group=True, group_level=2):
+        suburb = item.key[1]
+        if suburb.lower() in melbourne_suburbs:
+            view[item.key[1]] = round(item.value["mean"], 3)
     return jsonify(view)
 
 
@@ -104,7 +104,7 @@ def sickness_allowance(state):
     end_index = "{}9999".format(get_lga_prefix()[state])
     lga_composition = get_lga_composition()
     melbourne_suburbs = get_melbourne_suburbs()
-    for item in get_statistic_view("medipayment", "sickness_allowance", "sickness_allowance", start_index, end_index):
+    for item in get_statistic_view("medipayment", "lga_statistic", "sickness_allowance", start_index, end_index):
         lga_name = re.sub(r'\(\S+\)', '', item.key[1]).strip()
         suburbs = lga_composition[lga_name]
         for suburb in suburbs:
@@ -122,7 +122,7 @@ def mental_health(state):
     end_index = "{}9999".format(get_lga_prefix()[state])
     lga_composition = get_lga_composition()
     melbourne_suburbs = get_melbourne_suburbs()
-    for item in get_statistic_view("mentalhealthadmission", "distribution", "mental_health_view", start_index, end_index):
+    for item in get_statistic_view("mentalhealthadmission", "lga_statistic", "mental_health", start_index, end_index):
         lga_name = re.sub(r'\(\S+\)', '', item.key[1]).strip()
         suburbs = lga_composition[lga_name]
         for suburb in suburbs:
