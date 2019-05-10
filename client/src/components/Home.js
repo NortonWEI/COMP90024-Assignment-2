@@ -52,11 +52,6 @@ class Home extends React.Component {
       allDataBySuburb: {},
       currentSuburbs: [],
       sentimentMarkers: [
-        {'sentiment': 0.9, 'position': [-37.8136, 144.9661]},
-        {'sentiment': 0.2, 'position': [-37.7846, 144.9631]},
-        {'sentiment': 0, 'position': [-37.8156, 144.8941]},
-        {'sentiment': -0.3, 'position': [-37.8566, 144.9621]},
-        {'sentiment': -0.9, 'position': [-37.8176, 144.9671]}
       ],
   };
 
@@ -169,8 +164,8 @@ class Home extends React.Component {
   };
 
   getSentimentColor = val => {
-    const red = Math.floor(Math.max(255*(-val), 0));
-    const green = Math.floor(Math.max(255*(val), 0));
+    const red = Math.floor(Math.max(255*(-val*2), 0));
+    const green = Math.floor(Math.max(255*(val*2), 0));
 
     return `rgb(${red},${green},0)`;
   };
@@ -431,7 +426,7 @@ class Home extends React.Component {
          <SizeMe>{({ size }) => <Grid item xs={12}>
             <BarChart
               width={size.width - 40}
-              height={300}
+              height={500}
               data={recombined}
               margin={{
                 top: 20, right: 20, bottom: 20, left: 20,
@@ -474,7 +469,7 @@ class Home extends React.Component {
           <Grid item>
             <ScatterChart
               width={size.width - 40}
-              height={500}
+              height={800}
               margin={{
                 top: 20, right: 20, bottom: 20, left: 20,
               }}
@@ -499,7 +494,7 @@ class Home extends React.Component {
           <Grid item>
             <ScatterChart
               width={size.width - 40}
-              height={500}
+              height={800}
               margin={{
                 top: 20, right: 20, bottom: 20, left: 20,
               }}
