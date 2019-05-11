@@ -1,6 +1,6 @@
 {
   "username": "admin",
-  "password": "password",
+  "password": "admin",
   "couch_url": "http://127.0.0.1:5984/",
   "tweets_db_name": "tweets_final",
   "user_db_name": "users"
