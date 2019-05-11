@@ -46,8 +46,19 @@ function (keys, values, rereduce) {
           return sum/count;
         }
       })(),
-      'geo_coordinates':values.reduce(function(a, b) { return b.geo_coordinates }, 0),
-      'suburb':values.reduce(function(a, b) { return b.suburb }, 0)
+      'geo_coordinates': values.reduce(function(a, b) { return b.geo_coordinates }, 0),
+      'suburb': values.reduce(function(a, b) { return b.suburb }, 0),
+      'positive_text': values.reduce(function(a, b) { return b.positive_text }, 0),
+      'negative_text': values.reduce(function(a, b) { return b.negative_text }, 0),
+      'fluctuation': (function(){
+        var max_positive = 0;
+        var min_negative = 0
+        values.forEach(function (value) {
+          max_positive = Math.max(max_positive, value.positive_mean);
+          min_negative = Math.min(min_negative, value.negative_mean);
+        });
+        return max_positive - min_negative
+      })()
     }
   } else {
     return {
@@ -138,6 +149,28 @@ function (keys, values, rereduce) {
       'suburb': (function(){
         return values[values.length -1].suburb;
       })(),
+      'positive_text': (function(){
+        var st = 0;
+        var result = "";
+        values.forEach(function (vObj) {
+            if ( vObj.polarity > st ){
+              st = vObj.polarity;
+              result = vObj.text;
+            }
+        });
+        return result;
+      })(),
+      'negative_text': (function(){
+        var st = 0;
+        var result = "";
+        values.forEach(function (vObj) {
+            if ( vObj.polarity < st ){
+              st = vObj.polarity;
+              result = vObj.text;
+            }
+        });
+        return result;
+      })()
     }
   }
 }
