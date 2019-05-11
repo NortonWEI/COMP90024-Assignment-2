@@ -147,15 +147,17 @@ def monitoring():
                                                      endkey=[end_index, "{}"],
                                                      group=True, group_level=2):
         if item.value["suburb"].lower() in melbourne_suburbs:
-            case = dict()
-            case["latitude"] = item.value["geo_coordinates"][1]
-            case["longitude"] = item.value["geo_coordinates"][0]
-            mag_positive = abs(item.value['positive_mean'])
-            mag_negative = abs(item.value['negative_mean'])
-            case["sentiment"] = round(mag_positive - mag_negative, 3)
-            case["fluctuation"] = round(mag_positive + mag_negative, 3)
-            users[item.key[1]] = case
-            rankings[item.key[1]] = case["fluctuation"]
+            if item.value["count"] > 5:
+                rankings[item.key[1]] = item.value["fluctuation"]
+                case = dict()
+                case["latitude"] = item.value["geo_coordinates"][1]
+                case["longitude"] = item.value["geo_coordinates"][0]
+                case["sentiment"] = round(item.value["sentiment"], 3)
+                case["fluctuation"] = round(item.value["fluctuation"], 3)
+                case["positive_text"] = item.value["positive_text"]
+                case["negative_text"] = item.value["negative_text"]
+                users[item.key[1]] = case
+
 
     ls = rankings.most_common(PAGE_ROWS)
     for l in ls:
