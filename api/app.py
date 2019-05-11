@@ -1,12 +1,16 @@
 import couchdb
 import json
-from flask import Flask, g, jsonify, url_for
-import random
+from flask import Flask, g, jsonify
 from flask_cors import CORS
+import re
+from collections import Counter
 
 GEO_INFO_FILE = "config/suburbs.json"
 JSON_MIME_TYPE = 'application/json'
-TEST_QUOTA = 50
+LGA_PREFIX_FILE = "config/lga_prefix.json"
+MELBOURNE_AREA_SUBURBS = "config/melbourne-suburbs.json"
+LGA_COMPOSITION_FILE = "config/lga_composition.json"
+PAGE_ROWS = 500
 
 app = Flask(__name__)
 CORS(app)
@@ -24,7 +28,7 @@ class Suburb:
 
 def get_couch_db():
     if not hasattr(g, 'couch_db'):
-        g.couch_db = couchdb.Server("http://couchdb:5984")
+        g.couch_db = couchdb.Server("http://{}:{}@172.26.37.208:5984".format("admin", "admin"))
     return g.couch_db
 
 
@@ -40,90 +44,125 @@ def get_geo_info():
     return g.geo_info
 
 
+def get_lga_prefix():
+    if not hasattr(g, 'lga_prefix'):
+        with open(LGA_PREFIX_FILE, 'r') as f:
+            g.lga_prefix = json.load(f)
+    return g.lga_prefix
+
+
+def get_melbourne_suburbs():
+    if not hasattr(g, 'melbourne_suburbs'):
+        with open(MELBOURNE_AREA_SUBURBS, 'r') as f:
+            suburbs = list()
+            for suburb in json.load(f):
+                suburbs.append(suburb["suburb"].lower())
+            g.melbourne_suburbs = suburbs
+    return g.melbourne_suburbs
+
+
+def get_lga_composition():
+    if not hasattr(g, 'lga_composition'):
+        with open(LGA_COMPOSITION_FILE, 'r') as f:
+            g.lga_composition = json.load(f)
+    return g.lga_composition
+
+
+def get_statistic_view(collection_name, design_doc_name, view_name, start_key, end_key):
+    return get_couch_db()[collection_name].view('{}/{}'.format(design_doc_name, view_name),
+                                                startkey=[start_key],
+                                                endkey=[end_key, "{}"])
+
+
 @app.route('/')
 def index():
-    suburbs = get_geo_info()
-    for s in suburbs:
-        print("{},{},{},{}".format(s.postcode, s.suburb, s.lga_name, s.state))
-    return "Total number of suburbs:{}".format(str(len(suburbs)))
-    # return get_couch_db().version()
-    #return render_template('index.html')
+    return get_couch_db().version()
 
 
 @app.route('/tweets_sentiment/<state>')
 def tweets_sentiment(state):
-    suburbs = [sub for sub in get_geo_info() if sub.state_code == state]
+    state = state.upper()
     view = dict()
-    access_index = 0
-    while len(view) < TEST_QUOTA:
-        #access_index = random.randint(0, len(suburbs) - 1)
-        access_index += 1
-        view[suburbs[access_index].suburb] = round(random.uniform(-1, 1), 3)
+    start_index = "{}0000".format(get_lga_prefix()[state])
+    end_index = "{}9999".format(get_lga_prefix()[state])
+    melbourne_suburbs = get_melbourne_suburbs()
+    for item in get_couch_db()['tweets_sample'].view('tweets/suburb',
+                                                     startkey=[start_index],
+                                                     endkey=[end_index, "{}"],
+                                                     group=True, group_level=2):
+        suburb = item.key[1]
+        # limiting of showing suburbs in Melbourne area
+        if suburb.lower() in melbourne_suburbs:
+            view[item.key[1]] = round(item.value["mean"], 3)
     return jsonify(view)
 
 
 @app.route('/sickness_allowance/<state>')
 def sickness_allowance(state):
-    suburbs = [sub for sub in get_geo_info() if sub.state_code == state]
+    state = state.upper()
     view = dict()
-    access_index = 0
-    while len(view) < TEST_QUOTA:
-        #access_index = random.randint(0, len(suburbs) - 1)
-        access_index += 1
-        view[suburbs[access_index].suburb] = round(random.uniform(0, 200), 3)
+    start_index = "{}0000".format(get_lga_prefix()[state])
+    end_index = "{}9999".format(get_lga_prefix()[state])
+    lga_composition = get_lga_composition()
+    melbourne_suburbs = get_melbourne_suburbs()
+    for item in get_statistic_view("medipayment", "lga_statistic", "sickness_allowance", start_index, end_index):
+        lga_name = re.sub(r'\(\S+\)', '', item.key[1]).strip()
+        suburbs = lga_composition[lga_name]
+        for suburb in suburbs:
+            # limiting of showing suburbs in Melbourne area
+            if suburb["suburb"].lower() in melbourne_suburbs:
+                view[suburb["suburb"]] = item.value
     return jsonify(view)
 
 
 @app.route('/mental_health/<state>')
 def mental_health(state):
-    suburbs = [sub for sub in get_geo_info() if sub.state_code == state]
+    state = state.upper()
     view = dict()
-    access_index = 0
-    while len(view) < TEST_QUOTA:
-        #access_index = random.randint(0, len(suburbs) - 1)
-        access_index += 1
-        view[suburbs[access_index].suburb] = random.randint(1, 200)
+    start_index = "{}0000".format(get_lga_prefix()[state])
+    end_index = "{}9999".format(get_lga_prefix()[state])
+    lga_composition = get_lga_composition()
+    melbourne_suburbs = get_melbourne_suburbs()
+    for item in get_statistic_view("mentalhealthadmission", "lga_statistic", "mental_health", start_index, end_index):
+        lga_name = re.sub(r'\(\S+\)', '', item.key[1]).strip()
+        suburbs = lga_composition[lga_name]
+        for suburb in suburbs:
+            # limiting of showing suburbs in Melbourne area
+            if suburb["suburb"].lower() in melbourne_suburbs:
+                view[suburb["suburb"]] = item.value
     return jsonify(view)
 
 
 @app.route('/monitoring')
 def monitoring():
     view = list()
-    coordinates = [(-37.7984, 144.9449), (-37.7833, 144.95), (-37.7603, 144.9502), (-37.8, 144.9667),
-                   (-37.8004, 144.9681), (-37.7818, 144.9666), (-37.7833, 144.9667), (-37.7603, 144.9502),
-                   (-37.7646, 144.9438), (-37.7603, 144.9502), (-37.7603, 144.9502), (-37.7667, 144.9667),
-                   (-37.7667, 144.9667), (-37.7667, 144.9667), (-37.7603, 144.9502), (-37.7725, 144.9724)]
-    while len(view) < TEST_QUOTA:
-        case = dict()
-        coordinate = coordinates[random.randint(0, len(coordinates) - 1)]
-        case["latitude"] = coordinate[0]
-        case["longitude"] = coordinate[1]
-        case["sentiment"] = round(random.uniform(-1, 1), 3)
-        case["fluctuation"] = round(random.uniform(0, 2), 3)
-        view.append(case)
+    users = dict()
+    rankings = Counter()
+    state = 'VIC'
+    start_index = "{}0000".format(get_lga_prefix()[state])
+    end_index = "{}9999".format(get_lga_prefix()[state])
+    melbourne_suburbs = get_melbourne_suburbs()
+    for item in get_couch_db()['tweets_sample'].view('tweets/user',
+                                                     startkey=[start_index],
+                                                     endkey=[end_index, "{}"],
+                                                     group=True, group_level=2):
+        if item.value["suburb"].lower() in melbourne_suburbs:
+            if item.value["count"] > 5:
+                rankings[item.key[1]] = item.value["fluctuation"]
+                case = dict()
+                case["latitude"] = item.value["geo_coordinates"][1]
+                case["longitude"] = item.value["geo_coordinates"][0]
+                case["sentiment"] = round(item.value["sentiment"], 3)
+                case["fluctuation"] = round(item.value["fluctuation"], 3)
+                case["positive_text"] = item.value["positive_text"]
+                case["negative_text"] = item.value["negative_text"]
+                users[item.key[1]] = case
+
+
+    ls = rankings.most_common(PAGE_ROWS)
+    for l in ls:
+        view.append(users[l[0]])
     return jsonify(view)
-
-@app.route('/', methods=['POST'])
-def add():
-    dbname = "wta2019"
-    couchdb = get_couch_db()
-    db = couchdb[dbname] if dbname in couchdb else couchdb.create(dbname)
-    saved_ids = list()
-    doc = {'name': 'Garbiñe Muguruza'}
-    db.save(doc)
-    saved_ids.append(doc)
-    doc = {'name': ' Hsieh Su-wei'}
-    db.save(doc)
-    saved_ids.append(doc)
-
-    return str(saved_ids)
-
-
-@app.route('/wta/2019/<uuid>')
-def query(uuid):
-    dbname = "wta2019"
-    db = get_couch_db()[dbname]
-    return db[uuid]['name']
 
 
 if __name__ == '__main__':
