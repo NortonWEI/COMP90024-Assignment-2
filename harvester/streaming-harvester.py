@@ -109,36 +109,36 @@ def process(tweet):
     return None
 
 
-def process_user_tweet(tweet, user):
-    tw_id = tweet["id_str"]
-    if tweet['truncated'] is True and 'extended_tweet' in tweet:
-        text = tweet['extended_tweet']['full_text']
-    else:
-        text = tweet['text']
-    blob = TextBlob(text)
-    tweet['polarity'] = blob.sentiment.polarity
-    tweet['subjectivity'] = blob.sentiment.subjectivity
-    tweet['suburb'] = user['suburb']
-    tweet['postcode'] = user['postcode']
-    tweet['state'] = user['state']
-    tweet['lga_name'] = user['lga_name']
-    tweet['lga_code'] = user['lga_code']
-    tweet['geo_precision'] = user['geo_precision']
-    tweet['geo_coordinates'] = user['geo_coordinates']
-    if blob.sentiment.polarity != 0:
-        doc_url = couch_url + tweets_db_name + '/' + tw_id
-        json_str = json.dumps(tweet)
-        r = requests.put(doc_url, data=json_str, auth=couch_auth)
-        print('[user tweet]', r.text)
-        print(multiprocessing.current_process().name)
-
-
-def process_user_timeline(tweet_user):
-    user_screen_name = tweet_user['screen_name']
-    for status in tweepy.Cursor(
-            tw_api.user_timeline, screen_name=user_screen_name).items(1000):
-        tweet = status._json
-        process_user_tweet(tweet, tweet_user)
+# def process_user_tweet(tweet, user):
+#     tw_id = tweet["id_str"]
+#     if tweet['truncated'] is True and 'extended_tweet' in tweet:
+#         text = tweet['extended_tweet']['full_text']
+#     else:
+#         text = tweet['text']
+#     blob = TextBlob(text)
+#     tweet['polarity'] = blob.sentiment.polarity
+#     tweet['subjectivity'] = blob.sentiment.subjectivity
+#     tweet['suburb'] = user['suburb']
+#     tweet['postcode'] = user['postcode']
+#     tweet['state'] = user['state']
+#     tweet['lga_name'] = user['lga_name']
+#     tweet['lga_code'] = user['lga_code']
+#     tweet['geo_precision'] = user['geo_precision']
+#     tweet['geo_coordinates'] = user['geo_coordinates']
+#     if blob.sentiment.polarity != 0:
+#         doc_url = couch_url + tweets_db_name + '/' + tw_id
+#         json_str = json.dumps(tweet)
+#         r = requests.put(doc_url, data=json_str, auth=couch_auth)
+#         print(multiprocessing.current_process().name)
+#         print('[user tweet]', r.text)
+#
+#
+# def process_user_timeline(tweet_user):
+#     user_screen_name = tweet_user['screen_name']
+#     for status in tweepy.Cursor(
+#             tw_api.user_timeline, screen_name=user_screen_name).items(1000):
+#         tweet = status._json
+#         process_user_tweet(tweet, tweet_user)
 
 
 # Create class MyStreamListener inheriting from StreamListener and overriding
@@ -153,10 +153,9 @@ class MyStreamListener(tweepy.StreamListener):
             user_doc_url = couch_url + user_db_name + '/' + user_screen_name
             user_json = json.dumps(tweet_user)
             r = requests.put(user_doc_url, data=user_json, auth=couch_auth)
-            print('[user]', r.text)
             if r.status_code == 201:
-                multiprocessing.Process(target=process_user_timeline, args=(tweet_user,)).start()
-
+                print('[user]', user_screen_name)
+                # multiprocessing.Process(target=process_user_timeline, args=(tweet_user,)).start()
 
 
     def on_error(self, status_code):

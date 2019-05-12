@@ -1,176 +1,91 @@
 function (keys, values, rereduce) {
   if (rereduce) {
+    var total_value = 0, count = 0, min_value = 0, max_value = 0, positive_count = 0, negative_count = 0, max_count = 0,
+    positive_sum = 0, negative_sum = 0, negative_text = "", positive_text = "", suburb = "", geo_coordinates =[];
+    values.reduce(function(a, b) {
+        total_value += b.sum;
+        count += b.count;
+        positive_count += b.positive_count;
+        negative_count += b.negative_count;
+        positive_sum += b.positive_sum;
+        negative_sum += b.negative_sum;
+        if(b.count >= max_count){
+          geo_coordinates = b.geo_coordinates;
+          suburb = b.suburb;
+        }
+        if (b.min < min_value){
+          min_value = b.min;
+          negative_text = b.negative_text;
+        }
+        if (b.max > max_value){
+          max_value = b.max;
+          positive_text = b.positive_text;
+        }
+    }, 0);
+    var positive_mean = (positive_count == 0) ? 0:positive_sum/positive_count;
+    var negative_mean = (negative_count == 0) ? 0:negative_sum/negative_count;
     return {
-      'sum': values.reduce(function(a, b) { return a + b.sum }, 0),
-      'count': values.reduce(function(a, b) { return a + b.count }, 0),
-      'min': values.reduce(function(a, b) { return Math.min(a, b.min) }, Infinity),
-      'max': values.reduce(function(a, b) { return Math.max(a, b.max) }, -Infinity),
-      'mean': (function(){
-        var count = 0;
-        var sum = 0
-        values.forEach(function (value) {
-          count += value.count;
-          sum += value.sum;
-        });
-        if (count == 0) {
-          return 0;
-        } else {
-          return sum/count;
-        }
-      })(),
-      'positive_count': values.reduce(function(a, b) { return a + b.positive_count }, 0),
-      'negative_count': values.reduce(function(a, b) { return a + b.negative_count }, 0),
-      'positive_mean': (function(){
-        var count = 0;
-        var sum = 0
-        values.forEach(function (value) {
-          count += value.positive_count;
-          sum += value.positive_mean;
-        });
-        if (count == 0) {
-          return 0;
-        } else {
-          return sum/count;
-        }
-      })(),
-      'negative_mean': (function(){
-        var count = 0;
-        var sum = 0
-        values.forEach(function (value) {
-          count += value.negative_count;
-          sum += value.negative_mean;
-        });
-        if (count == 0) {
-          return 0;
-        } else {
-          return sum/count;
-        }
-      })(),
-      'geo_coordinates': values.reduce(function(a, b) { return b.geo_coordinates }, 0),
-      'suburb': values.reduce(function(a, b) { return b.suburb }, 0),
-      'positive_text': values.reduce(function(a, b) { return b.positive_text }, 0),
-      'negative_text': values.reduce(function(a, b) { return b.negative_text }, 0),
-      'fluctuation': (function(){
-        var max_positive = 0;
-        var min_negative = 0
-        values.forEach(function (value) {
-          max_positive = Math.max(max_positive, value.positive_mean);
-          min_negative = Math.min(min_negative, value.negative_mean);
-        });
-        return max_positive - min_negative
-      })()
+      'sum': total_value,
+      'count': count,
+      'min': min_value,
+      'max': max_value,
+      'mean': count == 0 ? 0 : total_value/count,
+      'positive_sum': positive_sum,
+      'negative_sum': negative_sum,
+      'positive_count': positive_count,
+      'negative_count': negative_count,
+      'positive_mean': positive_mean,
+      'negative_mean': negative_mean,
+      'fluctuation': positive_mean - negative_mean,
+      'sentiment': positive_mean + negative_mean,
+      'positive_text': positive_text,
+      'negative_text': negative_text,
+      'geo_coordinates': geo_coordinates,
+      'suburb': suburb,
     }
   } else {
+    var total_value = 0, min_value = 0, max_value = 0, positive_count = 0, negative_count = 0,
+    positive_sum = 0, negative_sum = 0, negative_text ="", positive_text = "";
+    values.forEach(function(vObj){
+      var value = vObj.polarity;
+      total_value += value;
+      if (value >= 0 ){
+        positive_count ++;
+        positive_sum += value;
+        if( value > max_value) {
+          max_value = value;
+          positive_text = vObj.text;
+        }
+      }
+      else {
+        negative_count ++;
+        negative_sum += value;
+        if( value < min_value) {
+          min_value = value;
+          negative_text = vObj.text;
+        }
+      }
+    });
+    var positive_mean = (positive_count == 0)? 0: positive_sum/positive_count;
+    var negative_mean = (negative_count == 0)? 0: negative_sum/negative_count;
     return {
-      'sum': (function(){
-          var result = 0;
-          values.forEach(function (vObj) {
-            result += vObj.polarity;
-          });
-          return result;
-      })(),
+      'sum': total_value,
       'count': values.length,
-      'min': (function(){
-          var result = 0;
-          values.forEach(function (vObj) {
-            result = Math.min(result, vObj.polarity);
-          });
-          return result;
-      })(),
-      'max': (function(){
-          var result = 0;
-          values.forEach(function (vObj) {
-            result = Math.max(result, vObj.polarity);
-          });
-          return result;
-      })(),
-      'mean': (function(){
-          var result = 0;
-          if (values.length == 0) {
-              return 0;
-          } else {
-            values.forEach(function (vObj) {
-              result += vObj.polarity;
-            });
-              return result/values.length;
-          }
-      })(),
-      'positive_count': (function(){
-          var count = 0;
-          values.forEach(function (vObj) {
-              if ( vObj.polarity >= 0.0 ){
-                count += 1;
-              }
-          });
-          return count;
-      })(),
-      'negative_count': (function(){
-          var count = 0;
-          values.forEach(function (vObj) {
-              if ( vObj.polarity < 0.0 ){
-                count += 1;
-              }
-          });
-          return count;
-      })(),
-      'positive_mean': (function(){
-          var count = 0;
-          var sum = 0;
-          values.forEach(function (vObj) {
-              if ( vObj.polarity >= 0.0 ){
-                count += 1;
-                sum += vObj.polarity;
-              }
-          });
-          if (count == 0){
-            return 0;
-          } else {
-            return sum/count;
-          }
-      })(),
-      'negative_mean': (function(){
-          var count = 0;
-          var sum = 0;
-          values.forEach(function (vObj) {
-              if ( vObj.polarity < 0.0 ){
-                count += 1;
-                sum += vObj.polarity;
-              }
-          });
-          if (count == 0){
-            return 0;
-          } else {
-            return sum/count;
-          }
-      })(),
-      'geo_coordinates': (function(){
-        return values[values.length -1].geo_coordinates;
-      })(),
-      'suburb': (function(){
-        return values[values.length -1].suburb;
-      })(),
-      'positive_text': (function(){
-        var st = 0;
-        var result = "";
-        values.forEach(function (vObj) {
-            if ( vObj.polarity > st ){
-              st = vObj.polarity;
-              result = vObj.text;
-            }
-        });
-        return result;
-      })(),
-      'negative_text': (function(){
-        var st = 0;
-        var result = "";
-        values.forEach(function (vObj) {
-            if ( vObj.polarity < st ){
-              st = vObj.polarity;
-              result = vObj.text;
-            }
-        });
-        return result;
-      })()
+      'min': min_value,
+      'max': max_value,
+      'mean': (values.length == 0)? 0 : total_value/values.length,
+      'positive_sum': positive_sum,
+      'negative_sum': negative_sum,
+      'positive_count': positive_count,
+      'negative_count': negative_count,
+      'positive_mean': positive_mean,
+      'negative_mean': negative_mean,
+      'fluctuation': positive_mean - negative_mean,
+      'sentiment': positive_mean + negative_mean,
+      'positive_text': positive_text,
+      'negative_text': negative_text,
+      'geo_coordinates': values[values.length -1].geo_coordinates,
+      'suburb': values[values.length -1].suburb,
     }
   }
 }
