@@ -4,7 +4,9 @@ module.exports = function (grunt) {
       "couch-compile": {
         dbs: {
           files: {
-            "/tmp/tweets.json": "couchdb/tweets_sample/tweets"
+            // "/tmp/tweets.json": "couchdb/twitter/tweets",
+            "/tmp/medipayment.json":"couchdb/twitter/medipayment",
+            "/tmp/mentalhealthadmission.json":"couchdb/twitter/mentalhealthadmission"
           }
         }
       },
@@ -15,7 +17,9 @@ module.exports = function (grunt) {
         },
         medipayment: {
           files: {
-            "http://172.26.37.208:5984/tweets_sample": "/tmp/tweets.json"
+            // "http://172.26.37.176:5984/tweets_final": "/tmp/tweets.json",
+            "http://172.26.37.176:5984/medipayment": "/tmp/medipayment.json",
+            "http://172.26.37.176:5984/mentalhealthadmission": "/tmp/mentalhealthadmission.json"
           }
         }
       }
