@@ -339,10 +339,24 @@ class Home extends React.Component {
               icon={this.getSentimentIcon(s)}
             >
               <Popup>
-                <span>
-                  My sentiment score is {s.sentiment} <br/>
-                  My sentiment fluctuation value is {s.fluctuation}
-                </span>
+                <Typography variant="overline">
+                  Sentiment score: {s.sentiment}
+                </Typography>
+                <Typography variant="overline">
+                  Sentiment fluctuation score: {s.fluctuation}
+                </Typography>
+                <Typography variant="overline">
+                  Positive Text
+                </Typography>
+                <Typography variant="body1" style={{color: 'limegreen'}}>
+                  {s.positive_text}
+                </Typography>
+                <Typography variant="overline">
+                  Negative Text
+                </Typography>
+                <Typography variant="body1" style={{color: 'tomato'}}>
+                  {s.negative_text}
+                </Typography>
               </Popup>
             </Marker>
           ))}
@@ -440,7 +454,6 @@ class Home extends React.Component {
               <ReferenceLine y={0} stroke="#000" />
               <Bar dataKey="sPositive" fill="#00cc44" name="+ Avg. Twitter Sentiment"/>
               <Bar dataKey="sNegative" fill="#ff4d4d"  name="- Avg. Twitter Sentiment"/>
-
             </BarChart>
          </Grid>
         }
