@@ -28,7 +28,7 @@ class Suburb:
 
 def get_couch_db():
     if not hasattr(g, 'couch_db'):
-        g.couch_db = couchdb.Server("http://{}:{}@172.26.37.208:5984".format("admin", "admin"))
+        g.couch_db = couchdb.Server("http://{}:{}@172.26.37.176:5984".format("admin", "admin"))
     return g.couch_db
 
 
@@ -86,7 +86,7 @@ def tweets_sentiment(state):
     start_index = "{}0000".format(get_lga_prefix()[state])
     end_index = "{}9999".format(get_lga_prefix()[state])
     melbourne_suburbs = get_melbourne_suburbs()
-    for item in get_couch_db()['tweets_sample'].view('tweets/suburb',
+    for item in get_couch_db()['tweets_final'].view('tweets/suburb',
                                                      startkey=[start_index],
                                                      endkey=[end_index, "{}"],
                                                      group=True, group_level=2):
@@ -142,7 +142,7 @@ def monitoring():
     start_index = "{}0000".format(get_lga_prefix()[state])
     end_index = "{}9999".format(get_lga_prefix()[state])
     melbourne_suburbs = get_melbourne_suburbs()
-    for item in get_couch_db()['tweets_sample'].view('tweets/user',
+    for item in get_couch_db()['tweets_final'].view('tweets/user',
                                                      startkey=[start_index],
                                                      endkey=[end_index, "{}"],
                                                      group=True, group_level=2):
