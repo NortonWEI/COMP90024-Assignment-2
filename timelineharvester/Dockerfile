@@ -1,10 +1,10 @@
 FROM python:3
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/timelineharvester
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD [ "python", "./streaming-harvester.py" ]
+CMD [ "python", "./new-user-listener.py" ]

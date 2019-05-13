@@ -9,6 +9,16 @@ services:
       - ./db/couchdb/etc:/opt/couchdb/etc/local.d
     networks:
       web-net:
+  streamharvester:
+    build: streamharvester
+    volumes:
+      - ./streamharvester:/streamharvester
+    network_mode: "host"    
+  timelineharvester:
+    build: timelineharvester
+    volumes:
+      - ./timelineharvester:/timelineharvester
+    network_mode: "host"
   api:
     build: api
     volumes:
