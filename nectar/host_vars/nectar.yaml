@@ -1,0 +1,70 @@
+# Common vars
+availability_zone: melbourne-qh2-uom
+
+# Volume
+volumes:
+  - vol_name: vol-1
+    vol_size: 10
+  - vol_name: vol-2
+    vol_size: 10
+  - vol_name: vol-3
+    vol_size: 10
+  - vol_name: vol-4
+    vol_size: 10
+
+# Security group
+security_groups:
+  - name: ssh
+    description: "Allows SSH (port 22) from world"
+    protocol: tcp
+    port_range_min: 22
+    port_range_max: 22
+    remote_ip_prefix: 0.0.0.0/0
+  - name: http
+    description: "Allows HTTP (port 80) from world"
+    protocol: tcp
+    port_range_min: 80
+    port_range_max: 80
+    remote_ip_prefix: 0.0.0.0/0
+  - name: https
+    description: "Allows HTTPS (port 443) from world"
+    protocol: tcp
+    port_range_min: 443
+    port_range_max: 443
+    remote_ip_prefix: 0.0.0.0/0
+  - name: couch
+    description: "Allows CouchDB (port 5984) from world"
+    protocol: tcp
+    port_range_min: 5984
+    port_range_max: 5984
+    remote_ip_prefix: 0.0.0.0/0
+  - name: erlang
+    description: "Allows Erlang connection (port 4369) from world"
+    protocol: tcp
+    port_range_min: 4369
+    port_range_max: 4369
+    remote_ip_prefix: 0.0.0.0/0
+
+# Instance
+instances:
+- instance_name: COMP90024-CCC-1
+  instance_image: afccf48a-9426-4618-86dc-0ceb636f0169
+  instance_key_name: group-8
+  instance_flavor: uom.mse.2c9g
+- instance_name: COMP90024-CCC-2
+  instance_image: afccf48a-9426-4618-86dc-0ceb636f0169
+  instance_key_name: group-8
+  instance_flavor: uom.mse.2c9g
+- instance_name: COMP90024-CCC-3
+  instance_image: afccf48a-9426-4618-86dc-0ceb636f0169
+  instance_key_name: group-8
+  instance_flavor: uom.mse.2c9g
+- instance_name: COMP90024-CCC-4
+  instance_image: afccf48a-9426-4618-86dc-0ceb636f0169
+  instance_key_name: group-8
+  instance_flavor: uom.mse.2c9g
+
+# CouchDB credentials
+couchdb_username: admin
+couchdb_password: admin
+
