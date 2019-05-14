@@ -1,5 +1,5 @@
 import json, requests, tweepy, time
-from requests.auth import HTTPDigestAuth
+from requests.auth import HTTPBasicAuth
 from textblob import TextBlob
 
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
         couch_config = json.load(couch_config_file)
         couch_username = couch_config["username"]
         couch_password = couch_config["password"]
-        couch_auth = HTTPDigestAuth(couch_username, couch_password)
+        couch_auth = HTTPBasicAuth(couch_username, couch_password)
         couch_url = couch_config["couch_url"]
         tweets_db_name = couch_config["tweets_db_name"]
         user_db_name = couch_config["user_db_name"]
@@ -62,10 +62,11 @@ if __name__ == '__main__':
     tw_api = tweepy.API(auth_handler=tw_auth, wait_on_rate_limit=True,
                         wait_on_rate_limit_notify=True)
 
+    requests.put(couch_url + tweets_db_name, auth=couch_auth)
+    requests.put(couch_url + user_db_name, auth=couch_auth)
     payload = {'since': "now"}
     r = requests.get(couch_url + user_db_name + '/' + '_changes', params=payload)
     last_seq = r.json()['last_seq']
-    print(r.json())
 
     while True:
         payload = {'since': last_seq}
