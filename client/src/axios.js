@@ -5,9 +5,9 @@
 import * as axios from 'axios';
 
 export const Internal = axios.create({
-  baseURL: '/'
+  baseURL: `http://${window.location.hostname}/`
 });
 
 export const MiddlewareAPI = axios.create({
-  baseURL: 'http://0.0.0.0:5000/'
+  baseURL: `http://${window.location.hostname}:5000/`
 });
