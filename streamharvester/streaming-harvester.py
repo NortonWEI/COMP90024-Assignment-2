@@ -1,5 +1,5 @@
 import tweepy, json, requests, multiprocessing
-from requests.auth import HTTPDigestAuth
+from requests.auth import HTTPBasicAuth
 from textblob import TextBlob
 from shapely.geometry import Point, Polygon
 
@@ -109,38 +109,6 @@ def process(tweet):
     return None
 
 
-# def process_user_tweet(tweet, user):
-#     tw_id = tweet["id_str"]
-#     if tweet['truncated'] is True and 'extended_tweet' in tweet:
-#         text = tweet['extended_tweet']['full_text']
-#     else:
-#         text = tweet['text']
-#     blob = TextBlob(text)
-#     tweet['polarity'] = blob.sentiment.polarity
-#     tweet['subjectivity'] = blob.sentiment.subjectivity
-#     tweet['suburb'] = user['suburb']
-#     tweet['postcode'] = user['postcode']
-#     tweet['state'] = user['state']
-#     tweet['lga_name'] = user['lga_name']
-#     tweet['lga_code'] = user['lga_code']
-#     tweet['geo_precision'] = user['geo_precision']
-#     tweet['geo_coordinates'] = user['geo_coordinates']
-#     if blob.sentiment.polarity != 0:
-#         doc_url = couch_url + tweets_db_name + '/' + tw_id
-#         json_str = json.dumps(tweet)
-#         r = requests.put(doc_url, data=json_str, auth=couch_auth)
-#         print(multiprocessing.current_process().name)
-#         print('[user tweet]', r.text)
-#
-#
-# def process_user_timeline(tweet_user):
-#     user_screen_name = tweet_user['screen_name']
-#     for status in tweepy.Cursor(
-#             tw_api.user_timeline, screen_name=user_screen_name).items(1000):
-#         tweet = status._json
-#         process_user_tweet(tweet, tweet_user)
-
-
 # Create class MyStreamListener inheriting from StreamListener and overriding
 # on_status and on_error
 class MyStreamListener(tweepy.StreamListener):
@@ -190,10 +158,14 @@ if __name__ == '__main__':
         couch_config = json.load(couch_config_file)
         couch_username = couch_config["username"]
         couch_password = couch_config["password"]
-        couch_auth = HTTPDigestAuth(couch_username, couch_password)
+        couch_auth = HTTPBasicAuth(couch_username, couch_password)
         couch_url = couch_config["couch_url"]
         tweets_db_name = couch_config["tweets_db_name"]
         user_db_name = couch_config["user_db_name"]
+    r = requests.put(couch_url + tweets_db_name, auth=couch_auth)
+    print(r.text)
+    r = requests.put(couch_url + user_db_name, auth=couch_auth)
+    print(r.text)
 
     # Authenticate with App credentials
     tw_auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
