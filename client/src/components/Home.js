@@ -36,8 +36,7 @@ import Divider from "@material-ui/core/Divider";
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import * as L from "leaflet";
 import "../leaflet.awesome-markers";
-import MiddlewareAPI from "../axios";
-import Internal from "../axios";
+import {Internal, MiddlewareAPI} from "../axios";
 
 class Home extends React.Component {
   state = {
@@ -46,7 +45,6 @@ class Home extends React.Component {
       geoJSONData: null,
       loading: true,
       loadingContent: '',
-      geoJSONUrl: '/greater-melbourne.geojson',
       bounds: null,
       sentimentData: {},
       currentFeature: null,
@@ -64,7 +62,7 @@ class Home extends React.Component {
       });
 
       const suburbData = await Internal.get(
-        this.state.geoJSONUrl,
+        '/greater-melbourne.geojson',
       );
 
       let allData = {};
