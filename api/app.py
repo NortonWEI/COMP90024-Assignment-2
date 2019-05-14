@@ -28,7 +28,7 @@ class Suburb:
 
 def get_couch_db():
     if not hasattr(g, 'couch_db'):
-        g.couch_db = couchdb.Server("http://{}:{}@172.26.37.176:5984".format("admin", "admin"))
+        g.couch_db = couchdb.Server("http://{}:{}@couchdb:5984".format("admin", "admin"))
     return g.couch_db
 
 
