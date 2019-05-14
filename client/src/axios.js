@@ -9,5 +9,5 @@ export const Internal = axios.create({
 });
 
 export const MiddlewareAPI = axios.create({
-  baseURL: 'http://localhost:5000/'
+  baseURL: 'http://0.0.0.0:5000/'
 });
