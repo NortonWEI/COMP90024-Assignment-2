@@ -1,0 +1,30 @@
+- name: Populate the IP to the masternode bash script
+  vars:
+    instance_1_ip: "{{ os_instance.results[0].openstack.public_v4 }}"
+    instance_2_ip: "{{ os_instance.results[1].openstack.public_v4 }}"
+    instance_3_ip: "{{ os_instance.results[2].openstack.public_v4 }}"
+    instance_4_ip: "{{ os_instance.results[3].openstack.public_v4 }}"
+  template:
+    src: ./template/masternode.sh.j2
+    dest: ./roles/couchdb-masternode/tasks/masternode.sh
+
+- name: Populate the IP to the subnode_1 bash script
+  vars:
+    instance_2_ip: "{{ os_instance.results[1].openstack.public_v4 }}"
+  template:
+    src: ./template/subnode-1.sh.j2
+    dest: ./roles/couchdb-subnode-1/tasks/subnode-1.sh
+
+- name: Populate the IP to the subnode_2 bash script
+  vars:
+    instance_3_ip: "{{ os_instance.results[2].openstack.public_v4 }}"
+  template:
+    src: ./template/subnode-2.sh.j2
+    dest: ./roles/couchdb-subnode-2/tasks/subnode-2.sh
+
+- name: Populate the IP to the subnode_3 bash script
+  vars:
+    instance_4_ip: "{{ os_instance.results[3].openstack.public_v4 }}"
+  template:
+    src: ./template/subnode-3.sh.j2
+    dest: ./roles/couchdb-subnode-3/tasks/subnode-3.sh

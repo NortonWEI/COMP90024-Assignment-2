@@ -62,3 +62,6 @@ venv/
 .next
 
 *.pyc
+
+# Ansible retry file
+*.retry

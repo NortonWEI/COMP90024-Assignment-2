@@ -1,0 +1,9 @@
+- name: Populate the IP addresses to inventory.ini
+  vars:
+    instance_1_ip: "{{ os_instance.results[0].openstack.public_v4 }}"
+    instance_2_ip: "{{ os_instance.results[1].openstack.public_v4 }}"
+    instance_3_ip: "{{ os_instance.results[2].openstack.public_v4 }}"
+    instance_4_ip: "{{ os_instance.results[3].openstack.public_v4 }}"
+  template:
+    src: ./template/inventory.ini.j2
+    dest: ./inventory.ini
