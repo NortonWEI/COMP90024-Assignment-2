@@ -162,10 +162,8 @@ if __name__ == '__main__':
         couch_url = couch_config["couch_url"]
         tweets_db_name = couch_config["tweets_db_name"]
         user_db_name = couch_config["user_db_name"]
-    r = requests.put(couch_url + tweets_db_name, auth=couch_auth)
-    print(r.text)
-    r = requests.put(couch_url + user_db_name, auth=couch_auth)
-    print(r.text)
+    requests.put(couch_url + tweets_db_name, auth=couch_auth)
+    requests.put(couch_url + user_db_name, auth=couch_auth)
 
     # Authenticate with App credentials
     tw_auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
