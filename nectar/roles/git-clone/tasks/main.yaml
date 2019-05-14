@@ -1,0 +1,32 @@
+# - name: Clone git repo
+#   git: 
+#     repo: git@github.com:NortonWEI/COMP90024-Assignment-2.git
+#     dest: /home/ubuntu/COMP90024
+#     version: master
+#     accept_hostkey: yes
+#   become: yes
+
+- name: Add github ssh key
+  become: yes
+  copy: >
+    src=./group-8.pem
+    dest=/root/.ssh/group-8.pem
+    owner=root
+    group=root
+    mode=0600
+
+- name: Configure ssh to use ansible key for github.com
+  become: yes
+  template: >
+    src=./template/ssh_config.j2
+    dest=/root/.ssh/config
+    owner=root
+    group=root
+    mode=0644
+    
+- name: Clone a private repository
+  become: yes
+  git: >
+    repo=ssh://git@github.com:NortonWEI/COMP90024-Assignment-2.git
+    key_file=/root/.ssh/group-8.pem
+    dest=/home/ubuntu/COMP90024

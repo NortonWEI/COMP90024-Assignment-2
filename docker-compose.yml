@@ -1,14 +1,5 @@
 version: "3"
 services:
-  couchdb:
-    image: couchdb:2.3.1
-    ports:
-      - 5984:5984
-    volumes:
-      - ./db/couchdb/data:/opt/couchdb/data
-      - ./db/couchdb/etc:/opt/couchdb/etc/local.d
-    networks:
-      web-net:
   streamharvester:
     build: streamharvester
     volumes:
@@ -25,15 +16,13 @@ services:
       - ./api:/api
     ports:
       - 5000:5000
-    depends_on:
-      - couchdb
     networks:
       - web-net
   client:
     build: client
     volumes:
-      - ./client:/usr/src/app
-      - ./client/node_modules:/usr/src/app/node_modules
+      - './client:/usr/src/app'
+      - '/usr/src/app/node_modules'
     ports:
       - 80:3000
     networks:

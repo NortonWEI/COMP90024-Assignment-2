@@ -1,0 +1,3 @@
+- name: Set a time wait for initilization
+  become: yes
+  command: sleep 60

@@ -1,0 +1,27 @@
+- hosts: subnode_1
+  remote_user: ubuntu
+  gather_facts: true
+
+  roles:
+    - role: couchdb-subnode-1
+
+- hosts: subnode_2
+  remote_user: ubuntu
+  gather_facts: true
+
+  roles:
+    - role: couchdb-subnode-2
+
+- hosts: subnode_3
+  remote_user: ubuntu
+  gather_facts: true
+
+  roles:
+    - role: couchdb-subnode-3
+
+- hosts: masternode
+  remote_user: ubuntu
+  gather_facts: true
+
+  roles:
+    - role: couchdb-masternode

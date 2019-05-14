@@ -1,0 +1,112 @@
+- name: Uninstall old versions
+  become: yes
+  apt:
+    name: ['docker', 'docker-engine', 'docker.io']
+    state: absent
+
+- name: Install packages to allow apt to use a repository over HTTPS
+  become: yes
+  apt:
+    name: ['apt-transport-https', 'ca-certificates', 'curl', 'python-setuptools', 'python-pip', 'software-properties-common']
+    state: latest
+    install_recommends: no
+    update_cache: yes
+
+- name: Add Docker’s official GPG key
+  become: yes
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add docker apt repository and update apt cache
+  become: yes
+  apt_repository:
+    repo: "deb https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable"
+    mode: '644'
+    update_cache: yes
+    state: present
+
+- name: Install docker
+  become: yes
+  apt:
+    name: ['docker-ce']
+    state: latest
+    install_recommends: no
+    update_cache: yes
+
+- name: Install docker-compose
+  become: yes
+  pip:
+    name: ['docker-compose']
+    version: 1.22.0
+    state: present
+
+- name: Adding docker users
+  user:
+    name: "ubuntu"
+    append: yes
+    groups: docker
+  become: true
+  with_items: "['ubuntu']"
+
+- name: Create docker.service.d directory
+  become: yes
+  file:
+    path: /etc/systemd/system/docker.service.d/
+    state: directory
+
+- name: Configure Docker to use HTTP proxy
+  become: yes
+  copy:
+    dest: "/etc/systemd/system/docker.service.d/http-proxy.conf"
+    content: |
+      [Service]
+      Environment="HTTP_PROXY=http://wwwproxy.unimelb.edu.au:8000/" "NO_PROXY=localhost,127.0.0.1,127.0.1.1,ubuntu" 
+
+- name: Configure Docker to use HTTPS proxy
+  become: yes
+  copy:
+    dest: "/etc/systemd/system/docker.service.d/https-proxy.conf"
+    content: |
+      [Service]
+      Environment="HTTPS_PROXY=http://wwwproxy.unimelb.edu.au:8000/" "NO_PROXY=localhost,127.0.0.1,127.0.1.1,ubuntu" 
+
+- name: Flush changes
+  become: yes
+  raw: sudo systemctl daemon-reload
+
+- name: Restart Docker
+  become: yes
+  raw: sudo systemctl restart docker
+
+- name: Create /home/ubuntu/.docker directory
+  become: yes
+  file:
+    path: /home/ubuntu/.docker
+    state: directory
+
+- name: Configure Docker to use a proxy server
+  become: yes
+  copy:
+    dest: "/home/ubuntu/.docker/config.json"
+    content: |
+      {
+       "proxies":
+       {
+         "default":
+         {
+           "httpProxy": "http://wwwproxy.unimelb.edu.au:8000",
+           "httpsProxy": "http://wwwproxy.unimelb.edu.au:8000",
+           "ftpProxy": "http://wwwproxy.unimelb.edu.au:8000",
+           "noProxy": "localhost,127.0.0.1,127.0.1.1,ubuntu"
+         }
+       }
+      }
+
+- name: Pull the image of apache
+  become: yes
+  command: docker pull httpd
+
+- name: Pull the image of couchdb 2.3.0
+  become: yes
+  command: docker pull couchdb:2.3.0

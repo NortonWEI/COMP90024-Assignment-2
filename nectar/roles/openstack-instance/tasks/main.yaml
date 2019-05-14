@@ -1,0 +1,24 @@
+- name: Create instances
+  os_server:
+    name: '{{ item.instance_name }}'
+    image: '{{ item.instance_image }}'
+    key_name: '{{ item.instance_key_name }}'
+    flavor: '{{ item.instance_flavor }}'
+    availability_zone: '{{ availability_zone }}'
+    security_groups: '{{ sg_names }}'
+    volumes: '{{ os_vol_ids[idx]  }}'
+    auto_floating_ip: yes
+    wait: yes
+    timeout: 1000
+    state: present
+  loop: '{{ instances }}'
+  loop_control:
+    index_var: idx
+  register: os_instance
+
+- debug:
+    msg: "instance {{ item.instance_name }} has been created. IP address is {{ os_instance.results[idx].openstack.public_v4 }}"
+  when: os_instance.results[idx].openstack is defined
+  loop: '{{ instances }}'
+  loop_control:
+    index_var: idx
