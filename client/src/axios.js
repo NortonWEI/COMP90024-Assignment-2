@@ -4,7 +4,13 @@
 
 import * as axios from 'axios';
 
-const Axios = axios.create({
+const Internal = axios.create({
+  baseURL: 'localhost'
 });
 
-export default Axios;
+const MiddlewareAPI = axios.create({
+  baseURL: 'localhost:5000'
+});
+
+export default Internal;
+export default MiddlewareAPI;

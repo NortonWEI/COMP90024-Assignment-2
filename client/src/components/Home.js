@@ -3,7 +3,6 @@
  */
 
 import React, {Fragment} from 'react';
-import Axios from '../axios';
 import {Map, TileLayer, GeoJSON, Marker, Popup} from 'react-leaflet';
 import {Grid} from "@material-ui/core";
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -37,6 +36,8 @@ import Divider from "@material-ui/core/Divider";
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import * as L from "leaflet";
 import "../leaflet.awesome-markers";
+import MiddlewareAPI from "../axios";
+import Internal from "../axios";
 
 class Home extends React.Component {
   state = {
@@ -45,7 +46,7 @@ class Home extends React.Component {
       geoJSONData: null,
       loading: true,
       loadingContent: '',
-      geoJSONUrl: 'http://localhost/greater-melbourne.geojson',
+      geoJSONUrl: '/greater-melbourne.geojson',
       bounds: null,
       sentimentData: {},
       currentFeature: null,
@@ -62,7 +63,7 @@ class Home extends React.Component {
         loadingContent: '(1) Suburb Data'
       });
 
-      const suburbData = await Axios.get(
+      const suburbData = await Internal.get(
         this.state.geoJSONUrl,
       );
 
@@ -72,8 +73,8 @@ class Home extends React.Component {
         loadingContent: '(2) Twitter Sentiment Data'
       });
 
-      const sentimentData = await Axios.get(
-        'http://localhost:5000/tweets_sentiment/VIC',
+      const sentimentData = await MiddlewareAPI.get(
+        '/tweets_sentiment/VIC',
       );
 
       Object.keys(sentimentData.data).forEach(s => {
@@ -90,8 +91,8 @@ class Home extends React.Component {
         loadingContent: '(3) Sickness Allowance Data'
       });
 
-      const sicknessAllowanceData = await Axios.get(
-        'http://localhost:5000/sickness_allowance/VIC',
+      const sicknessAllowanceData = await MiddlewareAPI.get(
+        '/sickness_allowance/VIC',
       );
 
       Object.keys(sicknessAllowanceData.data).forEach(s => {
@@ -107,8 +108,8 @@ class Home extends React.Component {
         loadingContent: '(4) Mental Health Data'
       });
 
-      const mentalHealthData = await Axios.get(
-        'http://localhost:5000/mental_health/VIC',
+      const mentalHealthData = await MiddlewareAPI.get(
+        '/mental_health/VIC',
       );
 
       Object.keys(mentalHealthData.data).forEach(s => {
@@ -125,8 +126,8 @@ class Home extends React.Component {
         loadingContent: '(5) Extreme Sentiment Cases'
       });
 
-      const sentimentPositions = await Axios.get(
-        'http://localhost:5000/monitoring',
+      const sentimentPositions = await MiddlewareAPI.get(
+        '/monitoring',
       );
 
       this.setState({
