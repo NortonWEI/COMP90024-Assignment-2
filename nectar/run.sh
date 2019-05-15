@@ -8,4 +8,3 @@ ansible-playbook -i inventory.ini -u ubuntu --key-file=./group-8.pem ./build-doc
 
 ansible-playbook -i inventory.ini -u ubuntu --key-file=./group-8.pem ./cluster-couchdb.yaml
 
-# ansible-playbook -i inventory.ini -u ubuntu --key-file=./group-8.pem ./up-server.yaml

@@ -9,7 +9,5 @@
     - role: openstack-volume
     - role: openstack-security-group
     - role: openstack-instance
-    # - role: set-proxy
     - role: distribute-ip
-    # - role: openstack-initilization
     - role: generate-couchdb-cluster-script
